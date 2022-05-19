@@ -18,17 +18,27 @@ public class GamePanel extends JPanel implements Runnable{
     Paddle paddle2;
     Ball ball;
     Score score;
+    Menu menu= new Menu();
+
+    public static enum STATE{
+        MENU,
+        GAME
+    }
+    public static STATE state = STATE.MENU;
+
 
     GamePanel(){
+
         newPaddles();
         newBall();
         score = new Score(GAME_WIDTH,GAME_HEIGHT);
         this.setFocusable(true);
         this.addKeyListener(new AL());
+        this.addMouseListener(new MouseInput());
         this.setPreferredSize(SCREEN_SIZE);
-
         gameThread = new Thread(this);
         gameThread.start();
+
     }
 
     public void newBall() {
@@ -46,12 +56,16 @@ public class GamePanel extends JPanel implements Runnable{
         g.drawImage(image,0,0,this);
     }
     public void draw(Graphics g) {
-        paddle1.draw(g);
-        paddle2.draw(g);
-        ball.draw(g);
-        score.draw(g);
-        Toolkit.getDefaultToolkit().sync(); 
-
+        if(state==STATE.GAME){
+            paddle1.draw(g);
+            paddle2.draw(g);
+            ball.draw(g);
+            score.draw(g);
+            Toolkit.getDefaultToolkit().sync();
+        }
+        else {
+            menu.draw(g);
+        }
     }
     public void move() {
         paddle1.move();
@@ -114,20 +128,22 @@ public class GamePanel extends JPanel implements Runnable{
     public void run() {
         //game loop
         long lastTime = System.nanoTime();
-        double amountOfTicks =60.0;
+        double amountOfTicks = 60.0;
         double ns = 1000000000 / amountOfTicks;
         double delta = 0;
-        while(true) {
+        while (true) {
             long now = System.nanoTime();
-            delta += (now -lastTime)/ns;
+            delta += (now - lastTime) / ns;
             lastTime = now;
-            if(delta >=1) {
+            if (delta >= 1) {
                 move();
                 checkCollision();
                 repaint();
                 delta--;
             }
         }
+
+
     }
     public class AL extends KeyAdapter{
         public void keyPressed(KeyEvent e) {
